@@ -123,6 +123,21 @@ public class ApiRestController {
 
     }
 
+    @PutMapping("/notes/revoke")
+    public Note revokeAccessToNoteFromTeam(@RequestParam String teamName, @RequestParam UUID id) {
+
+        requireTeamExists(teamName);
+
+        Note note = noteRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+
+        note.sharedWith.remove(teamName);
+        noteRepo.save(note);
+
+        return note;
+
+    }
+
     @PostMapping("/teams/create")
     public ResponseEntity<Team> createTeam(@RequestBody TeamCreate request) {
         if (request.teamName() == null || request.teamName().isBlank()) {
