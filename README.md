@@ -1,6 +1,6 @@
 # bluestaq_assessment
 
-Requirements: JDK >25, `mvn`
+Requirements: JDK >=25, `mvn`
 
 Run with `mvn spring-boot:run`. Launches a local web server running at `http://localhost:8080`. See below for API and
 endpoint documentation. Bruno collection for mock API calls provided. Database persists across runs and is stored in
@@ -13,7 +13,8 @@ a web backend. Spring has a built-in H2 database that allowed me to develop quic
 real, I would probably opt for a SQLite or MySQL database to connect to. All relevant code is in
 `src/main/java/com/dotwoffle/bluestaq_assessment`. I split code into packages for data models (`model`), database schema
 and access (`database`), and API control (`api`). The bulk of the REST controller code is in
-(`api/ApiRestController.java`).
+(`api/ApiRestController.java`). I had Claude generate a lot of the API endpoint and model boilerplate, but I made all
+the architectural decisions concerning which endpoints to add and general user flow of the API.
 
 ## Design Decisions
 
