@@ -1,4 +1,4 @@
-package com.dotwoffle.bluestaq_assessment;
+package com.dotwoffle.bluestaq_assessment.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -15,12 +15,7 @@ public class Note {
     public String title;
     public String content;
 
-    //idk why this is needed yet
-    public Note() {
-        this.id = UUID.randomUUID();
-        this.title = "???";
-        this.content = "???";
-    }
+    protected Note() {}
 
     public Note(UUID id, String title, String content) {
         this.id = id;

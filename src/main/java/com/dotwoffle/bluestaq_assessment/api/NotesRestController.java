@@ -1,5 +1,8 @@
-package com.dotwoffle.bluestaq_assessment;
+package com.dotwoffle.bluestaq_assessment.api;
 
+import com.dotwoffle.bluestaq_assessment.database.NoteRepository;
+import com.dotwoffle.bluestaq_assessment.model.Note;
+import com.dotwoffle.bluestaq_assessment.model.NoteUpdate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,11 +11,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
 @RestController
-public class ApiRestController {
+public class NotesRestController {
 
     private final NoteRepository repo;
 
-    public ApiRestController(NoteRepository repo) {
+    public NotesRestController(NoteRepository repo) {
         this.repo = repo;
     }
 
