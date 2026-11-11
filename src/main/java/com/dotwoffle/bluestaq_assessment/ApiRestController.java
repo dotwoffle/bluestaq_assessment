@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @RestController
 public class ApiRestController {
 
@@ -19,17 +21,17 @@ public class ApiRestController {
         if (note.title == null || note.title.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required");
         }
-        if (repo.existsById(note.title)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "A note with that title already exists");
+        if (repo.existsById(note.id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A note with that id already exists");
         }
-        repo.save(new Note(note.title, note.content));
+        repo.save(new Note(note.id, note.title, note.content));
         return ResponseEntity.status(HttpStatus.CREATED).body(note);
     }
 
     @GetMapping("/get_note")
-    public Note getNote(@RequestParam String title) {
-        return repo.findById(title)
-                .map(e -> new Note(e.title, e.content))
+    public Note getNote(@RequestParam UUID id) {
+        return repo.findById(id)
+                .map(e -> new Note(e.id, e.title, e.content))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
