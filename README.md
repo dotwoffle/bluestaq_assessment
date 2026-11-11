@@ -2,6 +2,8 @@
 
 See below for API documentation
 
+Run with `mvn spring-boot:run`
+
 ## Notes
 
 - delete and update not currently atomic
@@ -14,6 +16,7 @@ See below for API documentation
     params optional
 - no reason for notes returned to client to contain "sharedWith" field
 - status codes are revealing information about which records exist even if requesting team doesn't have access
+- UUIDs should be generated on backend for new notes created by frontend
 
 # Notes API
 
