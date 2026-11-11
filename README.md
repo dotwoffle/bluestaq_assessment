@@ -46,6 +46,7 @@ be hard to implement but seemed redundant for this exercise.
   - don't need different models for create, update, etc. if I figure out how to get Spring to make some of the JSON
     params optional
   - some helper methods in the rest controller could go into the models themselves
+  - model code could be cleaned up, no need to make fields public for most models
 - no reason for notes returned to client to contain "sharedWith" field
 - status codes are revealing information about which records exist even if requesting team doesn't have access
 - UUIDs should be generated on backend for new notes created by frontend
