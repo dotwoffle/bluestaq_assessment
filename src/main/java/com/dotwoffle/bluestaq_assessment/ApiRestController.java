@@ -35,4 +35,13 @@ public class ApiRestController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    @DeleteMapping("/delete_note")
+    public ResponseEntity<Void> deleteNote(@RequestParam UUID id) {
+        if (!repo.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id");
+        }
+        repo.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

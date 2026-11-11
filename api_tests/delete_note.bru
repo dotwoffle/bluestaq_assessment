@@ -1,0 +1,20 @@
+meta {
+  name: delete_note
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://127.0.0.1:8080/delete_note?id=bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
