@@ -13,8 +13,9 @@ a web backend. Spring has a built-in H2 database that allowed me to develop quic
 real, I would probably opt for a SQLite or MySQL database to connect to. All relevant code is in
 `src/main/java/com/dotwoffle/bluestaq_assessment`. I split code into packages for data models (`model`), database schema
 and access (`database`), and API control (`api`). The bulk of the REST controller code is in
-(`api/ApiRestController.java`). I had Claude generate a lot of the API endpoint and model boilerplate, but I made all
-the architectural decisions concerning which endpoints to add and general user flow of the API.
+(`api/ApiRestController.java`). I had Claude generate a lot of the API endpoint and model boilerplate (and the API
+documentation), but I made all the architectural decisions concerning which endpoints to add and general user flow of
+the API.
 
 ## Design Decisions
 
@@ -55,8 +56,7 @@ be hard to implement but seemed redundant for this exercise.
 
 # Notes API Documentation
 
-A REST API for team-based note taking. Notes belong to a single owning team and can optionally be shared with other
-teams.
+A REST API for team-based note taking. Notes belong to a single owning team and can be shared with other teams.
 
 All request and response bodies are JSON. Send `Content-Type: application/json` on requests with a body.
 
@@ -74,19 +74,19 @@ A team with no access gets `404` so it cannot tell whether a note exists.
 
 ### Team
 
-| Field      | Type        | Description                             |
-|------------|-------------|-----------------------------------------|
-| `teamName` | string      | Unique team name (primary key)          |
-| `noteIds`  | UUID[]      | IDs of the notes this team owns         |
+| Field      | Type   | Description                     |
+|------------|--------|---------------------------------|
+| `teamName` | string | Unique team name (primary key)  |
+| `noteIds`  | UUID[] | IDs of the notes this team owns |
 
 ### Note
 
-| Field        | Type     | Description                                              |
-|--------------|----------|----------------------------------------------------------|
-| `id`         | UUID     | Unique note ID (primary key)                             |
-| `title`      | string   | Note title. Required, cannot be blank                    |
-| `content`    | string   | Note body                                                |
-| `sharedWith` | string[] | Names of teams allowed to view and update (not delete)   |
+| Field        | Type     | Description                                            |
+|--------------|----------|--------------------------------------------------------|
+| `id`         | UUID     | Unique note ID (primary key)                           |
+| `title`      | string   | Note title. Required, cannot be blank                  |
+| `content`    | string   | Note body                                              |
+| `sharedWith` | string[] | Names of teams allowed to view and update (not delete) |
 
 ---
 
@@ -130,41 +130,35 @@ curl -X POST http://localhost:8080/teams/create \
 
 `POST /notes/create?teamName={teamName}`
 
-Creates a note owned by `teamName`.
+Creates a note owned by `teamName`. Any `sharedWith` value in the body is ignored; use [Share a note](#share-a-note) after creating it.
 
 **Query parameters**
 
-| Name       | Type   | Required | Description             |
-|------------|--------|----------|-------------------------|
+| Name       | Type   | Required | Description                 |
+|------------|--------|----------|-----------------------------|
 | `teamName` | string | Yes      | Team that will own the note |
 
 **Body**
 
 ```json
-{
-  "title": "plan",
-  "content": "draft",
-  "sharedWith": ["beta"]
-}
+{ "title": "plan", "content": "draft" }
 ```
-
-`content` and `sharedWith` are optional. Every team in `sharedWith` must already exist.
 
 **Responses**
 
-| Status | Meaning                                              |
-|--------|------------------------------------------------------|
-| 201    | Note created, returns the `Note`                     |
-| 400    | Title missing or blank, or a shared team doesn't exist |
-| 404    | Team `teamName` does not exist                       |
-| 409    | A note with that `id` already exists                 |
+| Status | Meaning                              |
+|--------|--------------------------------------|
+| 201    | Note created, returns the `Note`     |
+| 400    | Title missing or blank               |
+| 404    | Team `teamName` does not exist       |
+| 409    | A note with that `id` already exists |
 
 **Example**
 
 ```bash
 curl -X POST "http://localhost:8080/notes/create?teamName=alpha" \
   -H "Content-Type: application/json" \
-  -d '{"title": "plan", "content": "draft", "sharedWith": ["beta"]}'
+  -d '{"title": "plan", "content": "draft"}'
 ```
 
 ---
@@ -173,19 +167,21 @@ curl -X POST "http://localhost:8080/notes/create?teamName=alpha" \
 
 `GET /notes/get?teamName={teamName}&id={id}`
 
+Allowed for the owning team and shared teams.
+
 **Query parameters**
 
-| Name       | Type   | Required | Description                          |
-|------------|--------|----------|--------------------------------------|
-| `teamName` | string | Yes      | Team making the request              |
-| `id`       | UUID   | Yes      | ID of the note                       |
+| Name       | Type   | Required | Description             |
+|------------|--------|----------|-------------------------|
+| `teamName` | string | Yes      | Team making the request |
+| `id`       | UUID   | Yes      | ID of the note          |
 
 **Responses**
 
-| Status | Meaning                                                      |
-|--------|--------------------------------------------------------------|
-| 200    | Returns the `Note`                                           |
-| 400    | `id` is not a valid UUID                                     |
+| Status | Meaning                                                       |
+|--------|---------------------------------------------------------------|
+| 200    | Returns the `Note`                                            |
+| 400    | `id` is not a valid UUID                                      |
 | 404    | Team or note not found, or the team has no access to the note |
 
 **Example**
@@ -217,10 +213,10 @@ Updates the title and/or content. Fields that are omitted (or `null`) are left u
 
 **Responses**
 
-| Status | Meaning                                                      |
-|--------|--------------------------------------------------------------|
-| 200    | Returns the updated `Note`                                   |
-| 400    | Title is blank, or `id` is not a valid UUID                  |
+| Status | Meaning                                                       |
+|--------|---------------------------------------------------------------|
+| 200    | Returns the updated `Note`                                    |
+| 400    | Title is blank, or `id` is not a valid UUID                   |
 | 404    | Team or note not found, or the team has no access to the note |
 
 **Example**
@@ -248,15 +244,77 @@ Deletes the note and removes its ID from the owning team's `noteIds`. Only the o
 
 **Responses**
 
-| Status | Meaning                                                  |
-|--------|----------------------------------------------------------|
-| 204    | Note deleted                                             |
-| 400    | `id` is not a valid UUID                                 |
-| 403    | Team can view the note (shared) but does not own it      |
-| 404    | Team or note not found, or the team has no access        |
+| Status | Meaning                                              |
+|--------|------------------------------------------------------|
+| 204    | Note deleted                                         |
+| 400    | `id` is not a valid UUID                             |
+| 403    | Team can view the note (shared) but does not own it  |
+| 404    | Team or note not found, or the team has no access    |
 
 **Example**
 
 ```bash
 curl -X DELETE "http://localhost:8080/notes/delete?teamName=alpha&id=3f2b8c1e-5a7d-4e0b-9c6a-1d2e3f4a5b6c"
+```
+
+---
+
+### Share a note
+
+`PUT /notes/share?teamName={teamName}&id={id}`
+
+Adds `teamName` to the note's `sharedWith` list, giving that team view and update access. Sharing with a team that already has access is harmless.
+
+Here `teamName` is the team being **granted** access, not the team making the request. The endpoint does not currently check who is calling it.
+
+**Query parameters**
+
+| Name       | Type   | Required | Description                         |
+|------------|--------|----------|-------------------------------------|
+| `teamName` | string | Yes      | Team to share the note with         |
+| `id`       | UUID   | Yes      | ID of the note                      |
+
+**Responses**
+
+| Status | Meaning                                  |
+|--------|------------------------------------------|
+| 200    | Returns the updated `Note`               |
+| 400    | `id` is not a valid UUID                 |
+| 404    | Team `teamName` or the note doesn't exist |
+
+**Example**
+
+```bash
+curl -X PUT "http://localhost:8080/notes/share?teamName=beta&id=3f2b8c1e-5a7d-4e0b-9c6a-1d2e3f4a5b6c"
+```
+
+---
+
+### Revoke a team's access
+
+`PUT /notes/revoke?teamName={teamName}&id={id}`
+
+Removes `teamName` from the note's `sharedWith` list. Revoking a team that isn't in the list changes nothing. This does not affect the owning team's access.
+
+As with sharing, `teamName` is the team losing access, and the endpoint does not currently check who is calling it.
+
+**Query parameters**
+
+| Name       | Type   | Required | Description                         |
+|------------|--------|----------|-------------------------------------|
+| `teamName` | string | Yes      | Team whose access is being removed  |
+| `id`       | UUID   | Yes      | ID of the note                      |
+
+**Responses**
+
+| Status | Meaning                                  |
+|--------|------------------------------------------|
+| 200    | Returns the updated `Note`               |
+| 400    | `id` is not a valid UUID                 |
+| 404    | Team `teamName` or the note doesn't exist |
+
+**Example**
+
+```bash
+curl -X PUT "http://localhost:8080/notes/revoke?teamName=beta&id=3f2b8c1e-5a7d-4e0b-9c6a-1d2e3f4a5b6c"
 ```
