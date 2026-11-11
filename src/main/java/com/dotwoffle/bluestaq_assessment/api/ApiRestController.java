@@ -24,7 +24,7 @@ public class ApiRestController {
         this.teamRepo = teamRepo;
     }
 
-    @PostMapping("/create_note")
+    @PostMapping("/notes/create")
     public ResponseEntity<Note> createNote(@RequestParam String teamName, @RequestBody Note note) {
         if(!teamRepo.existsById(teamName)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with name " + teamName + " does not exist");
@@ -45,14 +45,14 @@ public class ApiRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(note);
     }
 
-    @GetMapping("/get_note")
+    @GetMapping("/notes/get")
     public Note getNote(@RequestParam UUID id) {
         return noteRepo.findById(id)
                 .map(e -> new Note(e.id, e.title, e.content))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/delete_note")
+    @DeleteMapping("/notes/delete")
     public ResponseEntity<Void> deleteNote(@RequestParam UUID id) {
         if (!noteRepo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id");
@@ -61,7 +61,7 @@ public class ApiRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/update_note")
+    @PutMapping("/notes/update")
     public Note updateNote(@RequestParam UUID id, @RequestBody NoteUpdate update) {
         Note note = noteRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
@@ -79,7 +79,7 @@ public class ApiRestController {
         return noteRepo.save(note);
     }
 
-    @PostMapping("/create_team")
+    @PostMapping("/teams/create")
     public ResponseEntity<Team> createTeam(@RequestBody TeamCreate request) {
         if (request.teamName() == null || request.teamName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "teamName is required");
