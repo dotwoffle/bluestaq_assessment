@@ -1,26 +1,60 @@
 # bluestaq_assessment
 
-See below for API documentation
+Requirements: JDK >25, `mvn`
 
-Run with `mvn spring-boot:run`
+Run with `mvn spring-boot:run`. Launches a local web server running at `http://localhost:8080`. See below for API and
+endpoint documentation. Bruno collection for mock API calls provided. Database persists across runs and is stored in
+`./data/notesdb.mv.db`.
 
-## Notes
+## General Structure
 
-- delete and update not currently atomic
-- no time for note privacy: if you know the team name you can look up all their notes
-- "teamName" in URL params is stand-in for being logged in
-- ideal model: users belong to teams, notes belong to users
-  - user notes can be shared with a team, team notes can be shared with other teams
-- would like to reduce code reuse
+I chose Java Spring Boot to implement this REST API. Java is my strongest language and I am most familiar with Spring as
+a web backend. Spring has a built-in H2 database that allowed me to develop quickly, but if this were to be made for
+real, I would probably opt for a SQLite or MySQL database to connect to. All relevant code is in
+`src/main/java/com/dotwoffle/bluestaq_assessment`. I split code into packages for data models (`model`), database schema
+and access (`database`), and API control (`api`). The bulk of the REST controller code is in
+(`api/ApiRestController.java`).
+
+## Design Decisions
+
+**Teams:** I interpreted the prompt in this way: Individual teams want to have collections of notes shared among members
+of the team, and teams may want to share some of their notes with other teams. I designed the API with the goal in mind
+that notes must have access restricted based on team. Currently, the API requires that notes be created with an
+associated team. When operating on an existing note, the team name of the team that owns the note must be provided to be
+allowed to do anything with it. I pass the team name as a URL parameter as a stand-in for a theoretical, more robust
+login and authentication system. Notes can be shared among teams, and other teams with access to a note can update it,
+but only the owning team can delete a note. I thought this was a good balance between the spirit of collaboration and
+total note protection.
+
+**Database Schema:** I tried my best to follow good relational database practices and get to somewhat normal form,
+although Spring handled most of the hard work for me. The teams table does not store the entire contents of notes.
+Instead, it stores the primary key UUID of each note it owns, and the notes are in a separate table and do not care
+about what team owns them (although they store which teams they are shared with). I would have made teams have UUIDs as
+primary keys as well if I had more time.
+
+**Users:** I decided not to add a concept of individual users to this iteration of the API. Based on the way I
+interpreted the prompt, individual users are overkill when the point is to share notes among a team (ie. a team is a
+"workspace" containing notes relevant to whatever task is at hand). If users were to be added in, the structure would
+mirror how notes already work with teams: users would own notes, but could share notes with a single team. It wouldn't
+be hard to implement but seemed redundant for this exercise.
+
+## Other Notes
+
+- delete and update not currently atomic, need transaction protection
+- I had no time for authentication: if you know the team name you can look up all their notes
+- would like to reduce code reuse and to organize controller better
   - don't need different models for create, update, etc. if I figure out how to get Spring to make some of the JSON
     params optional
+  - some helper methods in the rest controller could go into the models themselves
 - no reason for notes returned to client to contain "sharedWith" field
 - status codes are revealing information about which records exist even if requesting team doesn't have access
 - UUIDs should be generated on backend for new notes created by frontend
+- I would love to put good javadoc on my classes and methods if I had more time :)
 
-# Notes API
+# Notes API Documentation
 
-A REST API for team-based note taking. Notes belong to a single owning team and can optionally be shared with other teams.
+A REST API for team-based note taking. Notes belong to a single owning team and can optionally be shared with other
+teams.
 
 All request and response bodies are JSON. Send `Content-Type: application/json` on requests with a body.
 
