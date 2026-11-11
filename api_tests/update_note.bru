@@ -1,0 +1,27 @@
+meta {
+  name: update_note
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://127.0.0.1:8080/update_note?id=bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5
+  body: json
+  auth: inherit
+}
+
+params:query {
+  id: bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5
+}
+
+body:json {
+  {
+    "title": "new title",
+    "content": "this is a NEW note"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

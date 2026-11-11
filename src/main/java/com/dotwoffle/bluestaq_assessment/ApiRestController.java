@@ -44,4 +44,22 @@ public class ApiRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/update_note")
+    public Note updateNote(@RequestParam UUID id, @RequestBody NoteUpdate update) {
+        Note note = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+
+        if (update.title() != null) {
+            if (update.title().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title cannot be blank");
+            }
+            note.title = update.title();
+        }
+        if (update.content() != null) {
+            note.content = update.content();
+        }
+
+        return repo.save(note);
+    }
+
 }
