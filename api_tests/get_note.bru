@@ -1,0 +1,20 @@
+meta {
+  name: get_note
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8080/get_note?title=test_note
+  body: none
+  auth: inherit
+}
+
+params:query {
+  title: test_note
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
