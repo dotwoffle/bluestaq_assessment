@@ -24,19 +24,31 @@ public class ApiRestController {
         this.teamRepo = teamRepo;
     }
 
+    private Team requireTeamExists(String teamName) {
+        return teamRepo.findById(teamName)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Team with name " + teamName + " does not exist"));
+    }
+
+    private void requireTeamHasNote(Team team, UUID id) {
+        if (!team.noteIds.contains(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "No note with that id in team " + team.teamName);
+        }
+    }
+
     @PostMapping("/notes/create")
     public ResponseEntity<Note> createNote(@RequestParam String teamName, @RequestBody Note note) {
-        if(!teamRepo.existsById(teamName)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with name " + teamName + " does not exist");
-        }
+        Team team = teamRepo.findById(teamName)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Team with name " + teamName + " does not exist"));
+
         if (note.title == null || note.title.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required");
         }
         if (noteRepo.existsById(note.id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A note with that id already exists");
         }
-
-        Team team = teamRepo.getReferenceById(teamName);
 
         noteRepo.save(new Note(note.id, note.title, note.content));
         team.noteIds.add(note.id);
@@ -46,23 +58,34 @@ public class ApiRestController {
     }
 
     @GetMapping("/notes/get")
-    public Note getNote(@RequestParam UUID id) {
+    public Note getNote(@RequestParam String teamName, @RequestParam UUID id) {
+        System.out.println(teamName);
+        System.out.println(id);
+        Team team = requireTeamExists(teamName);
+        requireTeamHasNote(team, id);
+
         return noteRepo.findById(id)
-                .map(e -> new Note(e.id, e.title, e.content))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/notes/delete")
-    public ResponseEntity<Void> deleteNote(@RequestParam UUID id) {
-        if (!noteRepo.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id");
-        }
+    public ResponseEntity<Void> deleteNote(@RequestParam String teamName, @RequestParam UUID id) {
+        Team team = requireTeamExists(teamName);
+        requireTeamHasNote(team, id);
+
         noteRepo.deleteById(id);
+        team.noteIds.remove(id);
+        teamRepo.save(team);
+
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/notes/update")
-    public Note updateNote(@RequestParam UUID id, @RequestBody NoteUpdate update) {
+    public Note updateNote(@RequestParam String teamName, @RequestParam UUID id,
+            @RequestBody NoteUpdate update) {
+        Team team = requireTeamExists(teamName);
+        requireTeamHasNote(team, id);
+
         Note note = noteRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
 
