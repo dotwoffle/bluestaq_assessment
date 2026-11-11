@@ -5,9 +5,13 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:8080/create_note
+  url: http://127.0.0.1:8080/create_note?teamName=team_dotwoffle
   body: json
   auth: inherit
+}
+
+params:query {
+  teamName: team_dotwoffle
 }
 
 body:json {
