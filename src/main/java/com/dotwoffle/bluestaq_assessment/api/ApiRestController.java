@@ -30,10 +30,19 @@ public class ApiRestController {
                         HttpStatus.NOT_FOUND, "Team with name " + teamName + " does not exist"));
     }
 
-    private void requireTeamHasNote(Team team, UUID id) {
-        if (!team.noteIds.contains(id)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "No note with that id in team " + team.teamName);
+    private void requireNoteAccess(Team team, Note note) {
+        boolean owner = team.noteIds.contains(note.id);
+        boolean shared = note.sharedWith.contains(team.teamName);
+        if (!owner && !shared) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id");
+        }
+    }
+
+    private void requireNoteOwner(Team team, Note note) {
+        requireNoteAccess(team, note);
+        if (!team.noteIds.contains(note.id)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Only the owning team can delete this note");
         }
     }
 
@@ -59,24 +68,23 @@ public class ApiRestController {
 
     @GetMapping("/notes/get")
     public Note getNote(@RequestParam String teamName, @RequestParam UUID id) {
-        System.out.println(teamName);
-        System.out.println(id);
         Team team = requireTeamExists(teamName);
-        requireTeamHasNote(team, id);
-
-        return noteRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Note note = noteRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+        requireNoteAccess(team, note);
+        return note;
     }
 
     @DeleteMapping("/notes/delete")
     public ResponseEntity<Void> deleteNote(@RequestParam String teamName, @RequestParam UUID id) {
         Team team = requireTeamExists(teamName);
-        requireTeamHasNote(team, id);
+        Note note = noteRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+        requireNoteOwner(team, note);
 
         noteRepo.deleteById(id);
         team.noteIds.remove(id);
         teamRepo.save(team);
-
         return ResponseEntity.noContent().build();
     }
 
@@ -84,10 +92,9 @@ public class ApiRestController {
     public Note updateNote(@RequestParam String teamName, @RequestParam UUID id,
             @RequestBody NoteUpdate update) {
         Team team = requireTeamExists(teamName);
-        requireTeamHasNote(team, id);
-
         Note note = noteRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+        requireNoteAccess(team, note);
 
         if (update.title() != null) {
             if (update.title().isBlank()) {
@@ -98,7 +105,6 @@ public class ApiRestController {
         if (update.content() != null) {
             note.content = update.content();
         }
-
         return noteRepo.save(note);
     }
 

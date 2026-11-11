@@ -12,6 +12,7 @@ See below for API documentation
 - would like to reduce code reuse
   - don't need different models for create, update, etc. if I figure out how to get Spring to make some of the JSON
     params optional
+- no reason for notes returned to client to contain "sharedWith" field
 
 # Notes API
 

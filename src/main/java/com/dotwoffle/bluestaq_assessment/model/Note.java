@@ -1,9 +1,9 @@
 package com.dotwoffle.bluestaq_assessment.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -14,6 +14,10 @@ public class Note {
     public UUID id;
     public String title;
     public String content;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "note_shared_teams", joinColumns = @JoinColumn(name = "note_id"))
+    @Column(name = "team_name")
+    public Set<String> sharedWith = new HashSet<>();
 
     protected Note() {}
 
