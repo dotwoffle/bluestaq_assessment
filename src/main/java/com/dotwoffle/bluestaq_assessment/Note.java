@@ -9,15 +9,17 @@ import jakarta.persistence.Table;
 public class Note {
 
     @Id
-    private final String title;
+    public String title;
+    public String content;
 
-    private final String content;
+    //idk why this is needed yet
+    public Note() {
+        this.title = "???";
+        this.content = "???";
+    }
 
     public Note(String title, String content) {
         this.title = title;
         this.content = content;
     }
-
-    public String getTitle() { return title; }
-    public String getContent() { return content; }
 }
