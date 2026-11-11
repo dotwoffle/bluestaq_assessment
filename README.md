@@ -13,6 +13,7 @@ See below for API documentation
   - don't need different models for create, update, etc. if I figure out how to get Spring to make some of the JSON
     params optional
 - no reason for notes returned to client to contain "sharedWith" field
+- status codes are revealing information about which records exist even if requesting team doesn't have access
 
 # Notes API
 

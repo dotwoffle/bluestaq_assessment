@@ -1,0 +1,21 @@
+meta {
+  name: share_note
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://127.0.0.1:8080/notes/share?id=bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5&teamName=other_team
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: bc6daabe-52d1-420f-8dfa-c56a4e2ba2e5
+  teamName: other_team
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

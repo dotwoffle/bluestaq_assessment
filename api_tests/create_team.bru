@@ -12,8 +12,12 @@ post {
 
 body:json {
   {
-    "teamName": "team_dotwoffle"
+    "teamName": "{{teamName}}"
   }
+}
+
+vars:pre-request {
+  teamName: other_team
 }
 
 settings {

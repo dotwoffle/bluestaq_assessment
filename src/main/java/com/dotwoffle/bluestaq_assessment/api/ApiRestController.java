@@ -108,6 +108,21 @@ public class ApiRestController {
         return noteRepo.save(note);
     }
 
+    @PutMapping("/notes/share")
+    public Note shareNoteWithTeam(@RequestParam String teamName, @RequestParam UUID id) {
+
+        requireTeamExists(teamName);
+
+        Note note = noteRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No note with that id"));
+
+        note.sharedWith.add(teamName);
+        noteRepo.save(note);
+
+        return note;
+
+    }
+
     @PostMapping("/teams/create")
     public ResponseEntity<Team> createTeam(@RequestBody TeamCreate request) {
         if (request.teamName() == null || request.teamName().isBlank()) {
