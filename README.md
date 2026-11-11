@@ -3,8 +3,8 @@
 Requirements: JDK >=25, `mvn`
 
 Run with `mvn spring-boot:run`. Launches a local web server running at `http://localhost:8080`. See below for API and
-endpoint documentation. Bruno collection for mock API calls provided. Database persists across runs and is stored in
-`./data/notesdb.mv.db`.
+endpoint documentation. Bruno collection for mock API calls provided in `api_tests/`. Database persists across runs and
+is stored in `./data/notesdb.mv.db`.
 
 ## General Structure
 
